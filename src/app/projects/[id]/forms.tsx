@@ -100,7 +100,14 @@ export function AssignUserForm({
       <input type="hidden" name="projectId" value={projectId} />
       <Select name="userId" required>
         <SelectTrigger className="w-64">
-          <SelectValue placeholder="Select a user to assign" />
+          {/* Base UI's SelectValue shows the raw value unless given a label lookup —
+              unlike Radix, it doesn't infer the label from SelectItem's children. */}
+          <SelectValue placeholder="Select a user to assign">
+            {(value: string | null) =>
+              users.find((user) => user.id === value)?.name ??
+              "Select a user to assign"
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {users.map((user) => (

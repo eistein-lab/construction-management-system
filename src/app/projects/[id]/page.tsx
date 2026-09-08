@@ -95,8 +95,8 @@ export default async function ProjectDetailPage({
           <section className="flex flex-col gap-4">
             <h2 className="font-semibold">Team assignments</h2>
             <p className="text-sm text-muted-foreground">
-              CEO and ADMIN always see every project. Every other role only
-              sees projects they&apos;re assigned to here.
+              Every role already sees every project by default — only SPV is
+              limited to projects they&apos;re explicitly assigned to here.
             </p>
             <div className="flex flex-col gap-2">
               {project.assignments.length === 0 && (
