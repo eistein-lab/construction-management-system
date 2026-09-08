@@ -1,7 +1,11 @@
 // Construction Management System — Prisma schema
-// Day 1 scope: Identity & Access + Project Structure only (docs/DATA_MODEL.md §1-2)
+// Day 1: Identity & Access + Project Structure (docs/DATA_MODEL.md §1-2)
+// Day 2: PPIC Planning Baseline (docs/DATA_MODEL.md §2, docs/PPIC_LOGIC.md) + AuditLog (§9)
 // Do not add tables for later days here — each implementation day extends this file
 // per docs/IMPLEMENTATION_PLAN.md, and every addition must trace back to docs/DATA_MODEL.md.
+//
+// Money fields are whole Rupiah, no fractional currency (docs/DECISIONS.md D-002) —
+// Decimal(18,0), not Int, since a real project budget can exceed Int's ~2.1B ceiling.
 
 generator client {
   provider = "prisma-client"
@@ -44,10 +48,14 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  projectAssignments ProjectAssignment[]
-  createdProjects    Project[]            @relation("ProjectCreatedBy")
-  createdSubPhases   SubPhase[]           @relation("SubPhaseCreatedBy")
-  createdWorks       Work[]               @relation("WorkCreatedBy")
+  projectAssignments        ProjectAssignment[]
+  createdProjects           Project[]           @relation("ProjectCreatedBy")
+  createdSubPhases          SubPhase[]          @relation("SubPhaseCreatedBy")
+  createdWorks              Work[]              @relation("WorkCreatedBy")
+  createdPlanningBaselines  PlanningBaseline[]  @relation("PlanningBaselineCreatedBy")
+  approvedPlanningBaselines PlanningBaseline[]  @relation("PlanningBaselineApprovedBy")
+  createdPlanningLines      PlanningLine[]      @relation("PlanningLineCreatedBy")
+  auditLogEntries           AuditLog[]
 
   @@index([role])
 }
@@ -95,9 +103,10 @@ model Project {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  createdBy   User                 @relation("ProjectCreatedBy", fields: [createdById], references: [id])
-  assignments ProjectAssignment[]
-  subPhases   SubPhase[]
+  createdBy         User                @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  assignments       ProjectAssignment[]
+  subPhases         SubPhase[]
+  planningBaselines PlanningBaseline[]
 
   @@index([status])
 }
@@ -128,8 +137,99 @@ model Work {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  subPhase  SubPhase @relation(fields: [subPhaseId], references: [id], onDelete: Cascade)
-  createdBy User     @relation("WorkCreatedBy", fields: [createdById], references: [id])
+  subPhase      SubPhase       @relation(fields: [subPhaseId], references: [id], onDelete: Cascade)
+  createdBy     User           @relation("WorkCreatedBy", fields: [createdById], references: [id])
+  planningLines PlanningLine[]
 
   @@index([subPhaseId])
+}
+
+// ---------------------------------------------------------------------------
+// 2b. PPIC Planning Baseline — docs/DATA_MODEL.md §2, docs/PPIC_LOGIC.md
+// ---------------------------------------------------------------------------
+
+enum BaselineStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  SUPERSEDED
+}
+
+// "Current approved scope" for a Work = original baseline lines + all APPROVED
+// BaselineAddendum lines (addenda land in a later day — see docs/PPIC_LOGIC.md).
+// version is monotonically increasing per project; version 1 is the one that
+// becomes isOriginal=true at Kickoff (Day 4) and is then locked forever.
+model PlanningBaseline {
+  id              String         @id @default(uuid())
+  projectId       String
+  version         Int
+  status          BaselineStatus @default(DRAFT)
+  isOriginal      Boolean        @default(false)
+  notes           String?
+  rejectionReason String?
+  createdById     String
+  approvedById    String?
+  approvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User           @relation("PlanningBaselineCreatedBy", fields: [createdById], references: [id])
+  approvedBy User?          @relation("PlanningBaselineApprovedBy", fields: [approvedById], references: [id])
+  lines      PlanningLine[]
+
+  @@unique([projectId, version])
+  @@index([projectId, status])
+}
+
+enum PlanningLineSource {
+  MANUAL
+  QS_FORMULA
+}
+
+// formulaApplicationId is deferred to the day the FormulaApplication table is
+// added (docs/QS_FORMULA_LOGIC.md) — source exists now so rows never need
+// backfilling once that traceability link is added.
+model PlanningLine {
+  id              String             @id @default(uuid())
+  baselineId      String
+  workId          String
+  itemDescription String
+  unit            String
+  quantity        Decimal            @db.Decimal(18, 4)
+  unitPrice       Decimal            @db.Decimal(18, 0)
+  totalValue      Decimal            @db.Decimal(18, 0)
+  source          PlanningLineSource @default(MANUAL)
+  sequence        Int
+  createdById     String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  baseline  PlanningBaseline @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+  work      Work             @relation(fields: [workId], references: [id])
+  createdBy User             @relation("PlanningLineCreatedBy", fields: [createdById], references: [id])
+
+  @@index([baselineId])
+  @@index([workId])
+}
+
+// ---------------------------------------------------------------------------
+// 9. Audit — docs/DATA_MODEL.md §9. Written for every APPROVE/REJECT action
+// (docs/BUSINESS_RULES.md §Approval & Rejection) starting with baseline
+// approval, the first approval workflow in the app.
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  action     String
+  actorId    String
+  beforeJson Json?
+  afterJson  Json?
+  createdAt  DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
 }

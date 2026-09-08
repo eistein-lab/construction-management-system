@@ -1,11 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import {
-  requireRole,
-  requireSession,
-  hasGlobalProjectVisibility,
-  ForbiddenError,
-} from "@/lib/auth-guard";
+import { requireRole, requireSession, hasGlobalProjectVisibility } from "@/lib/auth-guard";
+import { assertProjectVisible } from "@/lib/services/access";
 
 /**
  * Service layer for Project / SubPhase / Work — docs/DATA_MODEL.md §2,
@@ -60,22 +56,6 @@ export async function updateProject(
 ) {
   await requireRole([...STRUCTURE_EDITOR_ROLES]);
   return prisma.project.update({ where: { id: projectId }, data: input });
-}
-
-async function assertProjectVisible(projectId: string) {
-  const session = await requireSession();
-  const { role, id: userId } = session.user;
-
-  const assignment = hasGlobalProjectVisibility(role)
-    ? true
-    : await prisma.projectAssignment.findUnique({
-        where: { projectId_userId: { projectId, userId } },
-      });
-
-  if (!assignment) {
-    throw new ForbiddenError("Not assigned to this project");
-  }
-  return session;
 }
 
 export async function getProjectDetail(projectId: string) {

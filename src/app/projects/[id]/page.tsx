@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -5,6 +6,7 @@ import {
   listAllUsers,
 } from "@/lib/services/project-structure";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   SubPhaseForm,
@@ -40,6 +42,14 @@ export default async function ProjectDetailPage({
         <p className="text-sm text-muted-foreground">
           {project.client ?? "No client set"} · {project.location ?? "No location set"}
         </p>
+        <Button
+          render={<Link href={`/projects/${project.id}/baseline`} />}
+          variant="outline"
+          size="sm"
+          className="mt-3"
+        >
+          Planning Baseline
+        </Button>
       </div>
 
       <section className="flex flex-col gap-4">
