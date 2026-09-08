@@ -36,8 +36,7 @@ Blocks Priority 1? **No.** Baseline/Kickoff (Priority 1) don't depend on Addendu
 **Q-01 — Does CEO double as ADMIN, or is ADMIN a separate role?**
 Recommended default: separate role. Blocks Priority 1? No.
 
-**Q-02 — Are non-SPV roles (PURCHASING, FINANCE, ACCOUNTING, LOGISTIC) scoped to assigned projects only, or do they see all projects?**
-Recommended default: same `ProjectAssignment` scoping as SPV. Blocks Priority 1? No.
+~~Q-02 — non-SPV project scoping~~ — **RESOLVED**, see [DECISIONS.md](DECISIONS.md) D-010: only SPV is `ProjectAssignment`-scoped, per the permission matrix's own "V (assigned)" annotation which applies to no other role.
 
 **Q-03 — Does PlanningBaseline approval require QS/PPIC co-sign in addition to CEO, or is CEO sole approver?**
 Recommended default: CEO sole approver (matches your confirmed table: "PPIC Baseline → CEO", singular). Blocks Priority 1? No — treated as resolved-enough to build; flag if wrong.

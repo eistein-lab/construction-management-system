@@ -33,6 +33,9 @@ Per your explicit "do not change these thresholds," these values are hardcoded i
 **D-009 — Purchasing ceiling is a percentage, configurable only by CEO or FINANCE.**
 Confirmed. Not a flat Rupiah amount, not tiered, not ADMIN-configurable. Exact value and the escalation/blocking behavior once exceeded remain `NEEDS_CONFIRMATION` — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md). Affects [BUSINESS_RULES.md](BUSINESS_RULES.md) §Purchasing Ceiling.
 
+**D-010 — Project/SubPhase/Work visibility: only SPV is `ProjectAssignment`-scoped; every other role sees all projects.**
+Found and fixed during Day 1 manual testing: [USER_ROLES.md](USER_ROLES.md)'s permission matrix already specified this precisely (only SPV's cell reads "V (assigned)"; every other role's is plain "V"), but a since-removed [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) entry (former Q-02) mistakenly treated it as unresolved and defaulted the Day 1 implementation to scoping every role. Manual QA caught it immediately (a PPIC user couldn't see a project they'd just created). Corrected in `src/lib/auth-guard.ts`'s `hasGlobalProjectVisibility` — now `role !== "SPV"` instead of an allow-list of just CEO/ADMIN. Lesson: when an `OPEN_QUESTIONS.md` entry and a specific documented table disagree, the specific table wins — it should have been cross-checked against the matrix before writing the "default assumption," not treated as independently open.
+
 ## Assumptions
 
 **A-01 — Pricing Library CONFIGURE split between QS and ADMIN.**

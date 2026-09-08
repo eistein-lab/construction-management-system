@@ -43,7 +43,12 @@ export async function requireRole(allowed: Role[]) {
   return session;
 }
 
-/** CEO and ADMIN implicitly see every project — docs/DATA_MODEL.md §1 ProjectAssignment. */
+/**
+ * Per docs/USER_ROLES.md's permission matrix, only SPV is annotated "V (assigned)" —
+ * every other role has plain "V" on Project/SubPhase/Work, meaning unscoped view
+ * access. `ProjectAssignment` exists to scope SPV (and to let CEO/ADMIN explicitly
+ * grant it), not to gate every other role.
+ */
 export function hasGlobalProjectVisibility(role: Role) {
-  return role === "CEO" || role === "ADMIN";
+  return role !== "SPV";
 }
