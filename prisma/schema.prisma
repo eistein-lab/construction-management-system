@@ -1,0 +1,135 @@
+// Construction Management System — Prisma schema
+// Day 1 scope: Identity & Access + Project Structure only (docs/DATA_MODEL.md §1-2)
+// Do not add tables for later days here — each implementation day extends this file
+// per docs/IMPLEMENTATION_PLAN.md, and every addition must trace back to docs/DATA_MODEL.md.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Prisma 7 moved connection URLs out of the schema file entirely — see
+  // prisma7.config.ts `datasource.url`. Using Supabase's direct (non-pooled)
+  // connection string for both CLI and app runtime for now, to sidestep
+  // PgBouncer prepared-statement issues; can move to a pooled runtime URL
+  // later if connection-count becomes a real problem at higher load.
+}
+
+// ---------------------------------------------------------------------------
+// 1. Identity & Access — docs/DATA_MODEL.md §1, docs/USER_ROLES.md
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CEO
+  FINANCE
+  PPIC
+  PURCHASING
+  ACCOUNTING
+  LOGISTIC
+  SPV
+  QS
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projectAssignments ProjectAssignment[]
+  createdProjects    Project[]            @relation("ProjectCreatedBy")
+  createdSubPhases   SubPhase[]           @relation("SubPhaseCreatedBy")
+  createdWorks       Work[]               @relation("WorkCreatedBy")
+
+  @@index([role])
+}
+
+// Scopes which projects a non-CEO/non-ADMIN user can see — docs/USER_ROLES.md notes,
+// docs/OPEN_QUESTIONS.md Q-02 (project scoping for non-SPV roles is a default assumption,
+// applied uniformly here so it's one mechanism to adjust later, not several).
+model ProjectAssignment {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// 2. Project Structure (PPIC) — docs/DATA_MODEL.md §2, docs/PPIC_LOGIC.md
+// ---------------------------------------------------------------------------
+
+enum ProjectStatus {
+  PLANNING
+  KICKED_OFF
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+model Project {
+  id            String        @id @default(uuid())
+  code          String        @unique
+  name          String
+  client        String?
+  location      String?
+  status        ProjectStatus @default(PLANNING)
+  startDate     DateTime?
+  targetEndDate DateTime?
+  kickoffDate   DateTime?
+  createdById   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  createdBy   User                 @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  assignments ProjectAssignment[]
+  subPhases   SubPhase[]
+
+  @@index([status])
+}
+
+model SubPhase {
+  id          String   @id @default(uuid())
+  projectId   String
+  name        String
+  sequence    Int
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("SubPhaseCreatedBy", fields: [createdById], references: [id])
+  works     Work[]
+
+  @@index([projectId])
+}
+
+model Work {
+  id          String   @id @default(uuid())
+  subPhaseId  String
+  name        String
+  unit        String
+  sequence    Int
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subPhase  SubPhase @relation(fields: [subPhaseId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("WorkCreatedBy", fields: [createdById], references: [id])
+
+  @@index([subPhaseId])
+}
