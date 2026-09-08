@@ -4,7 +4,7 @@
 
 ## Status
 
-**DAY 1 — FOUNDATION IN PROGRESS.** Phase 0 documentation is approved (see `/docs`). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`.
+**DAYS 1–2 COMPLETE** (Foundation; PPIC Planning Baseline). Awaiting approval to start Day 3 (QS Formula). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`.
 
 ## What This Is
 
