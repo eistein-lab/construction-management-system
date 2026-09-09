@@ -4,7 +4,7 @@
 
 ## Status
 
-**DAYS 1–3 IN PROGRESS** (Foundation; PPIC Planning Baseline; QS Formula). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`. **Note**: the role is `PM` (Project Manager), not `PPIC` — PPIC is the name of the baseline/budgeting process, corrected 2026-09-09, see [docs/DECISIONS.md](docs/DECISIONS.md) D-012.
+**DAYS 1–3 COMPLETE** (Foundation; PPIC Planning Baseline; QS Formula). Awaiting approval to start Day 4 (Sub-Phase Kickoff). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`. **Note**: the role is `PM` (Project Manager), not `PPIC` — PPIC is the name of the baseline/budgeting process, corrected 2026-09-09, see [docs/DECISIONS.md](docs/DECISIONS.md) D-012.
 
 ## What This Is
 
