@@ -1,6 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getProjectDetail } from "@/lib/services/project-structure";
 import { listBaselinesForProject } from "@/lib/services/ppic-baseline";
 import { Button } from "@/components/ui/button";
 import { createBaselineAction } from "./actions";
@@ -12,8 +11,6 @@ export default async function BaselineIndexPage({
 }) {
   const { id: projectId } = await params;
   const session = await auth();
-  const project = await getProjectDetail(projectId);
-  if (!project) notFound();
 
   const baselines = await listBaselinesForProject(projectId);
   if (baselines.length > 0) {
@@ -23,10 +20,7 @@ export default async function BaselineIndexPage({
   const canCreate = session?.user.role === "PPIC";
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-start gap-4 px-4 py-8">
-      <h1 className="text-xl font-bold tracking-tight">
-        {project.name} — Planning Baseline
-      </h1>
+    <div className="flex flex-col items-start gap-4">
       <p className="text-sm text-muted-foreground">
         No baseline exists for this project yet.
       </p>

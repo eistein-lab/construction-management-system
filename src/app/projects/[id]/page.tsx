@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -6,7 +5,6 @@ import {
   listAllUsers,
 } from "@/lib/services/project-structure";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   SubPhaseForm,
@@ -32,25 +30,10 @@ export default async function ProjectDetailPage({
   const alreadyAssignedIds = new Set(project.assignments.map((a) => a.userId));
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-tight">{project.name}</h1>
-          <Badge variant="secondary">{project.code}</Badge>
-          <Badge>{project.status}</Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {project.client ?? "No client set"} · {project.location ?? "No location set"}
-        </p>
-        <Button
-          render={<Link href={`/projects/${project.id}/baseline`} />}
-          variant="outline"
-          size="sm"
-          className="mt-3"
-        >
-          Planning Baseline
-        </Button>
-      </div>
+    <div className="flex flex-col gap-8">
+      <p className="text-sm text-muted-foreground">
+        {project.client ?? "No client set"} · {project.location ?? "No location set"}
+      </p>
 
       <section className="flex flex-col gap-4">
         <h2 className="font-semibold">Sub-phases &amp; Works</h2>

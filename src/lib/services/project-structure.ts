@@ -58,6 +58,15 @@ export async function updateProject(
   return prisma.project.update({ where: { id: projectId }, data: input });
 }
 
+/** Lightweight fetch for chrome shared across a project's sub-pages (breadcrumb, sub-nav header) — avoids every nested layout/page pulling the full subPhases/works/assignments tree just to show a name and status badge. */
+export async function getProjectSummary(projectId: string) {
+  await assertProjectVisible(projectId);
+  return prisma.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: { id: true, code: true, name: true, status: true },
+  });
+}
+
 export async function getProjectDetail(projectId: string) {
   await assertProjectVisible(projectId);
 

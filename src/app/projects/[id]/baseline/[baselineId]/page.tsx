@@ -62,12 +62,12 @@ export default async function BaselineDetailPage({
     isPPIC && baseline.status === "APPROVED" && isLatest && !hasActiveRevision;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
+    <div className="flex flex-col gap-6">
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-tight">
-            {project.name} — Baseline v{baseline.version}
-          </h1>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Baseline v{baseline.version}
+          </h2>
           <Badge variant={STATUS_VARIANT[baseline.status]}>{baseline.status}</Badge>
           {baseline.isOriginal && <Badge variant="outline">Original</Badge>}
           {!isLatest && (

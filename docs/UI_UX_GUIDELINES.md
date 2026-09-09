@@ -15,6 +15,17 @@ Minimalist, clean, functional, fast, **easy to scan**. This is a working tool us
 
 If visual polish conflicts with business functionality or speed, functionality and speed win — no exceptions.
 
+## Navigation & Wayfinding
+
+Added after Day 2 feedback: the first two days' pages worked but felt disconnected — no way back, no sense of "where am I," a feature (Planning Baseline) reachable only via a button buried in page content. Minimalism is about removing decoration, not removing orientation. Every page below a top-level list (e.g. anything under `/projects/[id]/*`) follows this pattern, implemented **once per resource type in a shared layout**, never duplicated per page:
+
+- **Back link**: a `←` arrow plus the parent list's name (e.g. "← Projects") above the page title, linking to the parent list.
+- **Identity header**: the resource's name + code + status badge, shown once in the shared layout so every nested page carries the same unambiguous context instead of each page re-declaring — or forgetting — it.
+- **Section tabs ("submenu")**: once a resource has multiple modules (a project's Overview and Planning Baseline today; QS Formulas, Procurement, Progress, and Stock as later days add them), a plain underlined-tab row exposes all of them, so any module is one click away from any other, never hunted for inside page content. Active tab = solid underline + full-contrast text; inactive = muted text, no underline, no pill/background fill, no icons on the tabs themselves — text-only, consistent with the flat aesthetic.
+- **Icons**: lucide-react (already a dependency via shadcn) is fine for navigational clarity — a back arrow, a chevron — never as decoration, and never doubled up with a text affordance that already says the same thing.
+
+Reference implementation: `src/app/projects/[id]/layout.tsx` (back link + identity header + `ProjectSubNav`) and `src/components/project-sub-nav.tsx` (the tabs). This is the template for every future day that adds a project module — extend the existing layout's tabs, don't invent a new navigation pattern per feature. See [DECISIONS.md](DECISIONS.md) D-011.
+
 ## Surfaces
 
 - Neutral, light backgrounds (off-white/light gray page background, white content surfaces).
