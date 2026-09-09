@@ -3,7 +3,12 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getBaselineDetail, listBaselinesForProject } from "@/lib/services/ppic-baseline";
 import { getProjectDetail } from "@/lib/services/project-structure";
+import {
+  listFormulas,
+  listFormulaApplicationsForProject,
+} from "@/lib/services/qs-formula";
 import { calculateBaselineTotals } from "@/lib/calculations/baseline";
+import { calculateFormulaBreakdown, calculateFormulaBreakdownTotal } from "@/lib/calculations/formula";
 import { formatRupiah, formatQuantity } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -22,6 +27,9 @@ import {
   ApproveBaselineButton,
   RejectBaselineForm,
   StartRevisionButton,
+  ApplyFormulaForm,
+  CommitFormulaApplicationButton,
+  DiscardFormulaApplicationButton,
 } from "./forms";
 
 const STATUS_VARIANT: Record<string, "secondary" | "default" | "outline" | "destructive"> = {
@@ -55,11 +63,19 @@ export default async function BaselineDetailPage({
 
   const isPPIC = role === "PPIC";
   const isCEO = role === "CEO";
+  const isQS = role === "QS";
   const canEditLines = isPPIC && baseline.status === "DRAFT";
   const canSubmit = isPPIC && baseline.status === "DRAFT" && baseline.lines.length > 0;
   const canDecide = isCEO && baseline.status === "SUBMITTED";
   const canStartRevision =
     isPPIC && baseline.status === "APPROVED" && isLatest && !hasActiveRevision;
+  const canApplyFormula = isQS && baseline.status === "DRAFT";
+
+  const formulas = canApplyFormula ? await listFormulas() : [];
+  const allApplications = canApplyFormula
+    ? await listFormulaApplicationsForProject(projectId)
+    : [];
+  const pendingApplications = allApplications.filter((a) => a.status === "DRAFT");
 
   return (
     <div className="flex flex-col gap-6">
@@ -114,7 +130,14 @@ export default async function BaselineDetailPage({
                 <TableCell>
                   {line.work.subPhase.name} — {line.work.name}
                 </TableCell>
-                <TableCell>{line.itemDescription}</TableCell>
+                <TableCell>
+                  {line.itemDescription}
+                  {line.source === "QS_FORMULA" && (
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      via Formula
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell>{line.unit}</TableCell>
                 <TableCell className="text-right">{formatQuantity(line.quantity.toString())}</TableCell>
                 <TableCell className="text-right">{formatRupiah(line.unitPrice.toString())}</TableCell>
@@ -148,6 +171,94 @@ export default async function BaselineDetailPage({
           works={works}
           nextSequence={baseline.lines.length + 1}
         />
+      )}
+
+      {canApplyFormula && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-semibold">QS Formula</h2>
+
+          {pendingApplications.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                Pending applications — review the breakdown, then commit to add
+                these lines to the baseline.
+              </p>
+              {pendingApplications.map((app) => {
+                const breakdown = calculateFormulaBreakdown(
+                  app.formula.lines,
+                  Number(app.baseQuantity)
+                );
+                const total = calculateFormulaBreakdownTotal(breakdown);
+                return (
+                  <div key={app.id} className="rounded-md border p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium">
+                        {app.work.subPhase.name} — {app.work.name}: {app.formula.name} ×{" "}
+                        {formatQuantity(app.baseQuantity.toString())} {app.formula.outputUnit}
+                      </p>
+                      <div className="flex gap-2">
+                        <CommitFormulaApplicationButton
+                          applicationId={app.id}
+                          projectId={projectId}
+                          baselineId={baselineId}
+                        />
+                        <DiscardFormulaApplicationButton
+                          applicationId={app.id}
+                          projectId={projectId}
+                          baselineId={baselineId}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3 overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Item</TableHead>
+                            <TableHead className="text-right">Quantity</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead className="text-right">Unit Price</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {breakdown.map((row) => (
+                            <TableRow key={row.formulaLineId}>
+                              <TableCell>{row.itemName}</TableCell>
+                              <TableCell className="text-right">
+                                {formatQuantity(row.quantity)}
+                              </TableCell>
+                              <TableCell>{row.unit}</TableCell>
+                              <TableCell className="text-right">
+                                {formatRupiah(row.unitPrice)}
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {formatRupiah(row.totalValue)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <p className="mt-1 text-right text-sm font-semibold">
+                        Total: {formatRupiah(total)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <ApplyFormulaForm
+            projectId={projectId}
+            baselineId={baselineId}
+            works={works}
+            formulas={formulas.map((f) => ({
+              id: f.id,
+              name: f.name,
+              outputUnit: f.outputUnit,
+            }))}
+          />
+        </section>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

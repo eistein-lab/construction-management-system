@@ -1,6 +1,7 @@
 // Construction Management System — Prisma schema
 // Day 1: Identity & Access + Project Structure (docs/DATA_MODEL.md §1-2)
 // Day 2: PPIC Planning Baseline (docs/DATA_MODEL.md §2, docs/PPIC_LOGIC.md) + AuditLog (§9)
+// Day 3: QS Formula (docs/DATA_MODEL.md §3, docs/QS_FORMULA_LOGIC.md)
 // Do not add tables for later days here — each implementation day extends this file
 // per docs/IMPLEMENTATION_PLAN.md, and every addition must trace back to docs/DATA_MODEL.md.
 //
@@ -48,14 +49,17 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  projectAssignments        ProjectAssignment[]
-  createdProjects           Project[]           @relation("ProjectCreatedBy")
-  createdSubPhases          SubPhase[]          @relation("SubPhaseCreatedBy")
-  createdWorks              Work[]              @relation("WorkCreatedBy")
-  createdPlanningBaselines  PlanningBaseline[]  @relation("PlanningBaselineCreatedBy")
-  approvedPlanningBaselines PlanningBaseline[]  @relation("PlanningBaselineApprovedBy")
-  createdPlanningLines      PlanningLine[]      @relation("PlanningLineCreatedBy")
-  auditLogEntries           AuditLog[]
+  projectAssignments         ProjectAssignment[]
+  createdProjects            Project[]            @relation("ProjectCreatedBy")
+  createdSubPhases           SubPhase[]           @relation("SubPhaseCreatedBy")
+  createdWorks               Work[]               @relation("WorkCreatedBy")
+  createdPlanningBaselines   PlanningBaseline[]   @relation("PlanningBaselineCreatedBy")
+  approvedPlanningBaselines  PlanningBaseline[]   @relation("PlanningBaselineApprovedBy")
+  createdPlanningLines       PlanningLine[]       @relation("PlanningLineCreatedBy")
+  auditLogEntries            AuditLog[]
+  createdPricingLibraryItems PricingLibraryItem[] @relation("PricingLibraryItemCreatedBy")
+  createdFormulas            Formula[]            @relation("FormulaCreatedBy")
+  appliedFormulaApplications FormulaApplication[] @relation("FormulaApplicationAppliedBy")
 
   @@index([role])
 }
@@ -137,9 +141,10 @@ model Work {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  subPhase      SubPhase       @relation(fields: [subPhaseId], references: [id], onDelete: Cascade)
-  createdBy     User           @relation("WorkCreatedBy", fields: [createdById], references: [id])
-  planningLines PlanningLine[]
+  subPhase            SubPhase             @relation(fields: [subPhaseId], references: [id], onDelete: Cascade)
+  createdBy           User                 @relation("WorkCreatedBy", fields: [createdById], references: [id])
+  planningLines       PlanningLine[]
+  formulaApplications FormulaApplication[]
 
   @@index([subPhaseId])
 }
@@ -187,30 +192,33 @@ enum PlanningLineSource {
   QS_FORMULA
 }
 
-// formulaApplicationId is deferred to the day the FormulaApplication table is
-// added (docs/QS_FORMULA_LOGIC.md) — source exists now so rows never need
-// backfilling once that traceability link is added.
+// formulaApplicationId set for QS_FORMULA-sourced lines (docs/QS_FORMULA_LOGIC.md
+// §Traceability) — "which Formula, which FormulaApplication, what base quantity"
+// must always be answerable for a generated line.
 model PlanningLine {
-  id              String             @id @default(uuid())
-  baselineId      String
-  workId          String
-  itemDescription String
-  unit            String
-  quantity        Decimal            @db.Decimal(18, 4)
-  unitPrice       Decimal            @db.Decimal(18, 0)
-  totalValue      Decimal            @db.Decimal(18, 0)
-  source          PlanningLineSource @default(MANUAL)
-  sequence        Int
-  createdById     String
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id                   String             @id @default(uuid())
+  baselineId           String
+  workId               String
+  itemDescription      String
+  unit                 String
+  quantity             Decimal            @db.Decimal(18, 4)
+  unitPrice            Decimal            @db.Decimal(18, 0)
+  totalValue           Decimal            @db.Decimal(18, 0)
+  source               PlanningLineSource @default(MANUAL)
+  formulaApplicationId String?
+  sequence             Int
+  createdById          String
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
-  baseline  PlanningBaseline @relation(fields: [baselineId], references: [id], onDelete: Cascade)
-  work      Work             @relation(fields: [workId], references: [id])
-  createdBy User             @relation("PlanningLineCreatedBy", fields: [createdById], references: [id])
+  baseline           PlanningBaseline    @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+  work               Work                @relation(fields: [workId], references: [id])
+  createdBy          User                @relation("PlanningLineCreatedBy", fields: [createdById], references: [id])
+  formulaApplication FormulaApplication? @relation(fields: [formulaApplicationId], references: [id])
 
   @@index([baselineId])
   @@index([workId])
+  @@index([formulaApplicationId])
 }
 
 // ---------------------------------------------------------------------------
@@ -232,4 +240,96 @@ model AuditLog {
   actor User @relation(fields: [actorId], references: [id])
 
   @@index([entityType, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// 3. QS Formula (Pricing Library) — docs/DATA_MODEL.md §3, docs/QS_FORMULA_LOGIC.md
+// PricingLibraryItem/Formula/FormulaLine are global master data (no projectId —
+// reusable across every project). Only FormulaApplication is project-scoped,
+// via the Work it targets.
+// ---------------------------------------------------------------------------
+
+model PricingLibraryItem {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  name             String
+  unit             String
+  category         String
+  defaultUnitPrice Decimal  @db.Decimal(18, 0)
+  isActive         Boolean  @default(true)
+  createdById      String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  createdBy    User          @relation("PricingLibraryItemCreatedBy", fields: [createdById], references: [id])
+  formulaLines FormulaLine[]
+
+  @@index([category])
+}
+
+model Formula {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  outputUnit  String
+  description String?
+  isActive    Boolean  @default(true)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy    User                 @relation("FormulaCreatedBy", fields: [createdById], references: [id])
+  lines        FormulaLine[]
+  applications FormulaApplication[]
+
+  @@index([category])
+}
+
+// qty of one PricingLibraryItem needed per 1 output unit of the Formula
+// (docs/QS_FORMULA_LOGIC.md — e.g. "1 m² brick wall" = 70 bricks + ...).
+model FormulaLine {
+  id                   String  @id @default(uuid())
+  formulaId            String
+  pricingLibraryItemId String
+  qtyPerOutputUnit     Decimal @db.Decimal(18, 4)
+  unit                 String
+
+  formula            Formula            @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  pricingLibraryItem PricingLibraryItem @relation(fields: [pricingLibraryItemId], references: [id])
+
+  @@index([formulaId])
+}
+
+enum FormulaApplicationStatus {
+  DRAFT
+  COMMITTED
+}
+
+// A Formula applied to a specific Work at a specific base quantity
+// (docs/QS_FORMULA_LOGIC.md §FormulaApplication). DRAFT is freely
+// editable/discardable; COMMIT is a one-way transition that generates one
+// PlanningLine per FormulaLine into the project's current DRAFT baseline —
+// see src/lib/services/qs-formula.ts for the commit transaction. A committed
+// application and the PlanningLines it produced are never edited or deleted
+// through normal application flows (docs/BUSINESS_RULES.md §Historical
+// Integrity) — no AuditLog row is written separately since the application
+// itself, kept forever, already is the audit record.
+model FormulaApplication {
+  id           String                   @id @default(uuid())
+  workId       String
+  formulaId    String
+  baseQuantity Decimal                  @db.Decimal(18, 4)
+  status       FormulaApplicationStatus @default(DRAFT)
+  appliedById  String
+  appliedAt    DateTime                 @default(now())
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  work          Work           @relation(fields: [workId], references: [id])
+  formula       Formula        @relation(fields: [formulaId], references: [id])
+  appliedBy     User           @relation("FormulaApplicationAppliedBy", fields: [appliedById], references: [id])
+  planningLines PlanningLine[]
+
+  @@index([workId])
+  @@index([status])
 }

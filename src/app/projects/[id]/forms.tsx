@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useRef } from "react";
 import {
   createSubPhaseAction,
   createWorkAction,
   assignUserAction,
   removeUserAction,
 } from "./actions";
+import { useResettingAction } from "@/hooks/use-resetting-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,24 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-function useResettingAction(
-  action: (
-    prevState: string | undefined,
-    formData: FormData
-  ) => Promise<string | undefined>
-) {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [error, formAction, isPending] = useActionState(
-    async (prevState: string | undefined, formData: FormData) => {
-      const result = await action(prevState, formData);
-      if (!result) formRef.current?.reset();
-      return result;
-    },
-    undefined
-  );
-  return { formRef, error, formAction, isPending };
-}
 
 export function SubPhaseForm({
   projectId,

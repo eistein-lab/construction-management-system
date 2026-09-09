@@ -10,9 +10,22 @@ export async function NavBar() {
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="font-semibold tracking-tight">
-          Construction Management System
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="font-semibold tracking-tight">
+            Construction Management System
+          </Link>
+          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link href="/projects" className="hover:text-foreground">
+              Projects
+            </Link>
+            <Link href="/pricing-library" className="hover:text-foreground">
+              Pricing Library
+            </Link>
+            <Link href="/formulas" className="hover:text-foreground">
+              Formulas
+            </Link>
+          </nav>
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">{session.user.name}</span>
           <Badge variant="secondary">{session.user.role}</Badge>

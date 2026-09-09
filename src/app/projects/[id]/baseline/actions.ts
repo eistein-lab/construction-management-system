@@ -10,6 +10,11 @@ import {
   approveBaseline,
   rejectBaseline,
 } from "@/lib/services/ppic-baseline";
+import {
+  createFormulaApplicationDraft,
+  commitFormulaApplication,
+  discardFormulaApplicationDraft,
+} from "@/lib/services/qs-formula";
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth-guard";
 
 function friendlyError(error: unknown, fallback: string): string {
@@ -86,4 +91,41 @@ export async function rejectBaselineAction(
   }
   revalidatePath(`/projects/${projectId}/baseline/${baselineId}`);
   return undefined;
+}
+
+export async function createFormulaApplicationAction(
+  _prevState: string | undefined,
+  formData: FormData
+): Promise<string | undefined> {
+  const projectId = String(formData.get("projectId"));
+  const baselineId = String(formData.get("baselineId"));
+  try {
+    await createFormulaApplicationDraft({
+      workId: String(formData.get("workId")),
+      formulaId: String(formData.get("formulaId")),
+      baseQuantity: Number(formData.get("baseQuantity")),
+    });
+  } catch (error) {
+    return friendlyError(error, "Only QS can apply a formula.");
+  }
+  revalidatePath(`/projects/${projectId}/baseline/${baselineId}`);
+  return undefined;
+}
+
+export async function commitFormulaApplicationAction(
+  applicationId: string,
+  projectId: string,
+  baselineId: string
+) {
+  await commitFormulaApplication(applicationId);
+  revalidatePath(`/projects/${projectId}/baseline/${baselineId}`);
+}
+
+export async function discardFormulaApplicationAction(
+  applicationId: string,
+  projectId: string,
+  baselineId: string
+) {
+  await discardFormulaApplicationDraft(applicationId);
+  revalidatePath(`/projects/${projectId}/baseline/${baselineId}`);
 }
