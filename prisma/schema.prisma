@@ -26,10 +26,14 @@ datasource db {
 // 1. Identity & Access — docs/DATA_MODEL.md §1, docs/USER_ROLES.md
 // ---------------------------------------------------------------------------
 
+// "PPIC" was never a role — it's the historical name of the baseline/budgeting
+// process itself (still reflected in PlanningBaseline naming and docs/PPIC_LOGIC.md).
+// The person who actually owns planning is the Project Manager (PM), working with
+// QS — corrected 2026-09-09, see docs/DECISIONS.md D-012.
 enum Role {
   CEO
   FINANCE
-  PPIC
+  PM
   PURCHASING
   ACCOUNTING
   LOGISTIC

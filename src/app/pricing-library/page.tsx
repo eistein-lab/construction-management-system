@@ -58,7 +58,7 @@ export default async function PricingLibraryPage() {
                   {formatRupiah(item.defaultUnitPrice.toString())}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={item.isActive ? "default" : "outline"}>
+                  <Badge variant={item.isActive ? "success" : "outline"}>
                     {item.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>

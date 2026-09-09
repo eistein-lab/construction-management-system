@@ -11,10 +11,12 @@ Status: PROPOSED. Entities in [DATA_MODEL.md](DATA_MODEL.md) §9. Event map upda
 | Event | Notified | Type |
 |---|---|---|
 | PlanningBaseline SUBMITTED | CEO | Approval needed |
-| PlanningBaseline APPROVED/REJECTED | PPIC (submitter) | Decision |
+| PlanningBaseline APPROVED/REJECTED | PM (submitter) | Decision |
+| SubPhaseKickoff REQUESTED | CEO | Approval needed |
+| SubPhaseKickoff APPROVED/REJECTED | PM (requester) | Decision |
 | BaselineAddendum SUBMITTED | CEO, FINANCE (both) | Approval needed |
 | BaselineAddendum — one of CEO/FINANCE approves, other still pending | The other pending approver | Reminder |
-| BaselineAddendum APPROVED (both signed) / REJECTED (either) | PPIC (submitter) | Decision |
+| BaselineAddendum APPROVED (both signed) / REJECTED (either) | PM (submitter) | Decision |
 | PurchaseRequest SUBMITTED | FINANCE | Approval needed |
 | PurchaseRequest over purchasing ceiling | CEO (in addition to FINANCE) | Approval needed |
 | PurchaseRequest APPROVED/REJECTED | Requester | Decision |
@@ -25,10 +27,10 @@ Status: PROPOSED. Entities in [DATA_MODEL.md](DATA_MODEL.md) §9. Event map upda
 | Payment SUBMITTED | FINANCE | Approval needed |
 | Payment over purchasing ceiling | CEO (in addition to FINANCE) | Approval needed |
 | SuratJalan DISCREPANCY | PURCHASING, LOGISTIC | Exception |
-| ProgressSubmission SUBMITTED | PPIC | Approval needed |
+| ProgressSubmission SUBMITTED | PM | Approval needed |
 | ProgressSubmission REJECTED | SPV (submitter) | Decision |
 | ProgressValidation due (weekly/biweekly period elapsed) | QS | Action needed |
-| ProgressValidation FLAGGED (validated ≠ reported, material difference) | PPIC | Informational |
+| ProgressValidation FLAGGED (validated ≠ reported, material difference) | PM | Informational |
 | PhysicalStockCount due (weekly/biweekly period elapsed) | LOGISTIC | Action needed |
 | StockValidation FLAGGED_FOR_INVESTIGATION | LOGISTIC, CEO | Exception |
 | ImportBatch VALIDATE completed with errors | ACCOUNTING | Exception |

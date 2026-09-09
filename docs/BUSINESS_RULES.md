@@ -48,13 +48,14 @@ Every `ConfigThreshold` (purchasing ceiling %, stock variance threshold %, prici
 
 | Action | Approver | Escalation |
 |---|---|---|
-| PPIC Baseline | CEO | — |
-| Kickoff | CEO | — |
+| PPIC Baseline (project-wide plan) | CEO | — |
+| Project Kickoff (one-time, unlocks Sub-Phase kickoff requests) | CEO | — |
+| Sub-Phase Kickoff (per Sub-Phase, unlocks PR for that Sub-Phase) | CEO | — |
 | Purchase Request | FINANCE | + CEO if over purchasing ceiling |
 | Purchase Order | FINANCE | + CEO if over purchasing ceiling |
 | Invoice | FINANCE (records, reference only) | — |
 | Payment | FINANCE | + CEO if over purchasing ceiling |
-| Progress (submission) | Project Manager (PPIC) | — |
+| Progress (submission) | PM (Project Manager) | — |
 | Progress Validation | QS, weekly/biweekly | — |
 | Stock (report) | LOGISTIC | — |
 | Stock Validation | QS, weekly/biweekly | — |

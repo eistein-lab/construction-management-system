@@ -18,7 +18,7 @@ export async function createProjectAction(
   } catch (error) {
     if (error instanceof UnauthorizedError) return "You must be signed in.";
     if (error instanceof ForbiddenError) {
-      return "Only PPIC can create a project.";
+      return "Only PM can create a project.";
     }
     if (
       error instanceof Error &&

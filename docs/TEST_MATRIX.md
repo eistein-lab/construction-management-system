@@ -13,6 +13,8 @@ Status: PROPOSED. Each row is a test case category to implement before the corre
 | QS Formula | Committed FormulaApplication is immutable; library price change afterward does not alter already-generated PlanningLines | Integration | 3 |
 | Kickoff | Kickoff sets Project.status and locks baseline v1 | Integration | 4 |
 | Kickoff | Post-kickoff scope change is rejected unless routed through BaselineAddendum | Integration | 4 |
+| Sub-Phase Kickoff | PurchaseRequest creation is rejected for a Work whose SubPhase has no APPROVED SubPhaseKickoff; succeeds once approved | Integration | 4 |
+| Sub-Phase Kickoff | Each SubPhase tracks kickoff independently — one SubPhase APPROVED does not affect another SubPhase's NOT_REQUESTED/REJECTED status | Integration | 4 |
 | Addendum | Addendum requires BOTH CEO and FINANCE approval to reach APPROVED; either party's rejection sets REJECTED regardless of the other's prior approval | Integration | 4 |
 | PR / Variance | Variance calculation matches hand-computed value across: under baseline, exactly at baseline, over baseline, zero baseline (N/A, no divide-by-zero) | Unit | 5 |
 | PR / Variance | Same variance function output is used by PR service and PO service (regression test asserting single code path) | Unit | 5–6 |
@@ -25,7 +27,7 @@ Status: PROPOSED. Each row is a test case category to implement before the corre
 | Payment Independence | Invoice can be recorded regardless of delivery status; Payment amount is never allocated to specific PO items (no item-level payment record exists anywhere) | Integration | 7 |
 | Accounting Expense | Baseline/Purchase Value/Paid Value/Debt Value/Invoiced/Expensed are independently stored and never derived from one another in a shared query path | Integration | 8 |
 | Progress | Only APPROVED ProgressSubmission affects the provisional Work.progressPercent; SUBMITTED/REJECTED do not | Unit | 11 |
-| Progress | ProgressCorrection requires its own PPIC approval before affecting progressPercent; original submission stays queryable unchanged | Integration | 11 |
+| Progress | ProgressCorrection requires its own PM approval before affecting progressPercent; original submission stays queryable unchanged | Integration | 11 |
 | Progress Validation | ProgressValidation defaults `validatedProgressPercent` to the reported figure; QS can adjust it; CEO dashboard reads only the validated figure, never the raw provisional one | Integration | 11 |
 | Stock | StockBalance ("Expected Stock") always equals Delivered − Used net of Adjustments/Transfers for its project/item/location (no direct-write path exists) | Unit | 12 |
 | Surat Jalan | Each discrepancy type (WRONG_PO, WRONG_SUPPLIER, DUPLICATE_SJ, UNEXPECTED_ITEM, UNDER_DELIVERY, OVER_DELIVERY) triggers correctly from crafted input | Unit | 12 |
@@ -46,7 +48,7 @@ Status: PROPOSED. Each row is a test case category to implement before the corre
 | Import | Unmatched project code is never auto-assigned; surfaces for manual resolution | Integration | 8 |
 | Notifications | Each event in the [NOTIFICATION_LOGIC.md](NOTIFICATION_LOGIC.md) map produces exactly one notification to the correct recipient, including dual-approval and QS-validation-due events | Integration | 13 |
 | Notifications | Stale-approval reminder fires after the configured threshold and not before | Integration | 13 |
-| Reconciliation (UAT) | Full seeded scenario: baseline → addendum (dual-approved) → PR → multiple POs from one PR → payment (pre-invoice) → delivery → progress (SPV→PPIC→QS) → stock reconciliation → dashboard, all totals tie out to hand-calculated expected values | End-to-end | 14 |
+| Reconciliation (UAT) | Full seeded scenario: baseline → addendum (dual-approved) → PR → multiple POs from one PR → payment (pre-invoice) → delivery → progress (SPV→PM→QS) → stock reconciliation → dashboard, all totals tie out to hand-calculated expected values | End-to-end | 14 |
 | Performance | Dashboard and list views issue a bounded, small number of queries regardless of row count (no N+1) under a seeded large dataset | Integration | 14 |
 
 ## Out of Scope for Automated Testing (manual only)

@@ -30,7 +30,7 @@ Project → PurchaseRequest → 1:N PurchaseOrder
 DRAFT → SUBMITTED → APPROVED / REJECTED → (CLOSED once fully converted to PO)
 ```
 
-1. Requester (PPIC or PURCHASING — see [USER_ROLES.md](USER_ROLES.md)) creates a `PurchaseRequest` with one or more `PRItem`s, each referencing a `Work` and optionally a specific `PlanningLine`.
+1. Requester (PM or PURCHASING — see [USER_ROLES.md](USER_ROLES.md)) creates a `PurchaseRequest` with one or more `PRItem`s, each referencing a `Work` and optionally a specific `PlanningLine`. **Requires the PRItem's Work's SubPhase to have an APPROVED `SubPhaseKickoff`** (see [PPIC_LOGIC.md](PPIC_LOGIC.md) §Sub-Phase Kickoff, Day 4) — otherwise creation is rejected.
 2. On `SUBMIT`, the shared variance function ([BUSINESS_RULES.md](BUSINESS_RULES.md)) runs and freezes a `varianceSnapshot` on the PR.
 3. **FINANCE** `APPROVE`s or `REJECT`s. **CEO** co-approves only when the PR's value/variance exceeds the configured purchasing ceiling percentage (see [BUSINESS_RULES.md](BUSINESS_RULES.md) §Purchasing Ceiling).
 4. An `APPROVED` PR is available to be drawn into one or more POs, always its own — never merged with another PR's items into the same PO. It moves to `CLOSED` once its items are fully allocated to POs (partial allocation keeps it `APPROVED` with a "partially converted" indicator).

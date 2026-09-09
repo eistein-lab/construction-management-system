@@ -47,7 +47,7 @@ export async function addPlanningLineAction(
       sequence: Number(formData.get("sequence") ?? 0),
     });
   } catch (error) {
-    return friendlyError(error, "Only PPIC can add planning lines.");
+    return friendlyError(error, "Only PM can add planning lines.");
   }
   revalidatePath(`/projects/${projectId}/baseline/${baselineId}`);
   return undefined;

@@ -4,7 +4,7 @@
 
 ## Status
 
-**DAYS 1–2 COMPLETE** (Foundation; PPIC Planning Baseline). Awaiting approval to start Day 3 (QS Formula). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`.
+**DAYS 1–3 IN PROGRESS** (Foundation; PPIC Planning Baseline; QS Formula). Implementation proceeds one day at a time per [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md); each day stops for explicit approval before the next begins. Progress is logged in `docs/DAILY_PROGRESS.md`. **Note**: the role is `PM` (Project Manager), not `PPIC` — PPIC is the name of the baseline/budgeting process, corrected 2026-09-09, see [docs/DECISIONS.md](docs/DECISIONS.md) D-012.
 
 ## What This Is
 
@@ -25,7 +25,7 @@ Before touching any business logic, read the relevant doc below. When a business
 | [docs/PROCUREMENT_LOGIC.md](docs/PROCUREMENT_LOGIC.md) | PR→1:N PO→Payment (direct, no Invoice gate) and PO→Surat Jalan→Delivery→Stock as separate threads |
 | [docs/PPIC_LOGIC.md](docs/PPIC_LOGIC.md) | Baseline hierarchy, versioning, addenda (CEO+FINANCE dual approval) |
 | [docs/QS_FORMULA_LOGIC.md](docs/QS_FORMULA_LOGIC.md) | Pricing library, formulas, formula application |
-| [docs/PROGRESS_LOGIC.md](docs/PROGRESS_LOGIC.md) | SPV progress submission, PPIC approval, QS weekly/biweekly validation |
+| [docs/PROGRESS_LOGIC.md](docs/PROGRESS_LOGIC.md) | SPV progress submission, PM approval, QS weekly/biweekly validation |
 | [docs/STOCK_LOGIC.md](docs/STOCK_LOGIC.md) | Purchased/Delivered/Used/Expected Remaining Stock, valuation (has a blocking NEEDS_CONFIRMATION) |
 | [docs/STOCK_RECONCILIATION.md](docs/STOCK_RECONCILIATION.md) | Expected vs. Physical stock, QS weekly/biweekly validation, discrepancy flagging (never auto-labeled) |
 | [docs/REPORTING_LOGIC.md](docs/REPORTING_LOGIC.md) | CEO dashboard, both deviation formulas (fixed thresholds, not configurable) |
@@ -47,7 +47,7 @@ Before touching any business logic, read the relevant doc below. When a business
 4. **A PurchaseOrder belongs to exactly one PurchaseRequest, never more than one.** `Project → PR → 1:N PO`. See [docs/PROCUREMENT_LOGIC.md](docs/PROCUREMENT_LOGIC.md).
 5. **No item-level payment allocation.** A Payment is a single amount against a PO. Debt Value (`Purchase Value − Paid Value`) is a whole-PO figure only. Never build per-item paid/debt tracking. See [docs/FINANCIAL_LOGIC.md](docs/FINANCIAL_LOGIC.md).
 6. **Financial position and physical position are never merged.** Purchase/Paid/Debt (money) and Purchased/Delivered/Used/Stock (material) are separate ladders, only ever compared side by side. See [docs/STOCK_LOGIC.md](docs/STOCK_LOGIC.md).
-7. **CEO-level figures use validated numbers, not raw reports.** Progress % and Stock % on the CEO dashboard always read the latest QS weekly/biweekly validation, never the raw PPIC-approved progress or raw Logistic stock count directly. See [docs/PROGRESS_LOGIC.md](docs/PROGRESS_LOGIC.md), [docs/STOCK_RECONCILIATION.md](docs/STOCK_RECONCILIATION.md).
+7. **CEO-level figures use validated numbers, not raw reports.** Progress % and Stock % on the CEO dashboard always read the latest QS weekly/biweekly validation, never the raw PM-approved progress or raw Logistic stock count directly. See [docs/PROGRESS_LOGIC.md](docs/PROGRESS_LOGIC.md), [docs/STOCK_RECONCILIATION.md](docs/STOCK_RECONCILIATION.md).
 8. **A flagged stock discrepancy is never auto-labeled as theft or any specific cause.** Status stays neutral ("flagged for investigation"); cause is recorded only after human investigation. See [docs/STOCK_RECONCILIATION.md](docs/STOCK_RECONCILIATION.md).
 9. **The CEO deviation thresholds (`>10%`, `≥5%`) are fixed constants, never changed and never admin-configurable.** See [docs/REPORTING_LOGIC.md](docs/REPORTING_LOGIC.md), [docs/DECISIONS.md](docs/DECISIONS.md) D-008.
 10. **Never invent a financial formula.** If something is genuinely unclear (see [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md)), mark it `NEEDS_CONFIRMATION`, build around it, and keep moving on unblocked work.

@@ -18,7 +18,7 @@ Each day ends with the Daily Completion Report format from your instructions, an
 ## Day 2 — PPIC Baseline
 
 **Deliverables**: `PlanningBaseline`, `PlanningLine` tables; baseline DRAFT→SUBMITTED→APPROVED UI and API; baseline versioning + `isOriginal` guarantee; CEO approval action.
-**Exit criteria**: PPIC can build and submit a baseline; CEO can approve/reject; an approved baseline is immutable pre-kickoff-revision rules enforced.
+**Exit criteria**: PM can build and submit a baseline; CEO can approve/reject; an approved baseline is immutable pre-kickoff-revision rules enforced.
 
 ## Day 3 — QS Formula
 
@@ -27,13 +27,13 @@ Each day ends with the Daily Completion Report format from your instructions, an
 
 ## Day 4 — Kickoff Approval
 
-**Deliverables**: `Kickoff` entity + trigger action; baseline lock enforcement; `BaselineAddendum` DRAFT/SUBMIT/dual-APPROVE (CEO + FINANCE) lifecycle.
-**Exit criteria**: kicking off a project locks baseline v1 permanently; an addendum can be created and requires **both** CEO and FINANCE approval before taking effect (either rejecting returns it to `REJECTED`); "current approved scope" updates correctly without touching original rows.
+**Deliverables**: project-level `Kickoff` entity + trigger action; baseline lock enforcement; `SubPhaseKickoff` entity (PM requests per Sub-Phase with planned dates, CEO approves/rejects) gating PurchaseRequest creation — see [PPIC_LOGIC.md](PPIC_LOGIC.md) §Sub-Phase Kickoff, added 2026-09-09; `BaselineAddendum` DRAFT/SUBMIT/dual-APPROVE (CEO + FINANCE) lifecycle.
+**Exit criteria**: kicking off a project locks baseline v1 permanently; requesting Sub-Phase kickoff before the project is kicked off is rejected; each Sub-Phase's kickoff status is independent (one APPROVED doesn't affect another's); an addendum can be created and requires **both** CEO and FINANCE approval before taking effect (either rejecting returns it to `REJECTED`); "current approved scope" updates correctly without touching original rows.
 
 ## Day 5 — Purchase Request + Variance
 
 **Deliverables**: `PurchaseRequest`/`PRItem` tables + UI; shared variance calculation function in the calculation layer ([BUSINESS_RULES.md](BUSINESS_RULES.md)); PR submit/approve/reject flow with **FINANCE as approver** and **CEO co-approval when over the configured purchasing ceiling %** (default escalation behavior: hard block until CEO co-signs — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q-C).
-**Exit criteria**: submitting a PR shows correct baseline-allowance/remaining-allowance/variance figures; approval routes to FINANCE, with CEO escalation firing correctly above the ceiling.
+**Exit criteria**: submitting a PR shows correct baseline-allowance/remaining-allowance/variance figures; approval routes to FINANCE, with CEO escalation firing correctly above the ceiling; PR creation is blocked for a Work whose Sub-Phase has no APPROVED `SubPhaseKickoff` (Day 4).
 
 ## Day 6 — Purchase Order + Purchasing Ceiling
 
@@ -59,12 +59,12 @@ Each day ends with the Daily Completion Report format from your instructions, an
 ## Day 10 — Expense vs. Progress Deviation (Calculation 1)
 
 **Deliverables**: Deviation 1 formula (`Expense % − Progress %`), fixed threshold `>10%` (hardcoded, not a `ConfigThreshold` — see [DECISIONS.md](DECISIONS.md) D-008), warning display.
-**Exit criteria**: the worked example (Expense 52%, Progress 40% → +12% WARNING) reproduces exactly in a seeded test project. Progress % source note: full correctness depends on Day 11's QS-validated progress; Day 10 ships against provisional (PPIC-approved, pre-validation) progress and is upgraded automatically once Day 11's validation layer exists — flagged, not silently reordered.
+**Exit criteria**: the worked example (Expense 52%, Progress 40% → +12% WARNING) reproduces exactly in a seeded test project. Progress % source note: full correctness depends on Day 11's QS-validated progress; Day 10 ships against provisional (PM-approved, pre-validation) progress and is upgraded automatically once Day 11's validation layer exists — flagged, not silently reordered.
 
 ## Day 11 — SPV Progress + QS Weekly/Biweekly Validation
 
-**Deliverables**: `ProgressSubmission`, `ProgressCorrection` tables + SPV submission UI; PPIC (Project Manager) approval flow; `ProgressValidation` table + QS weekly/biweekly validation UI; value-weighted (by approved budget) project-level rollup.
-**Exit criteria**: SPV submits progress with evidence; only PPIC-approved submissions move the provisional `progressPercent`; QS validation produces the official validated figure; Day 10's dashboard now reads the validated figure, not the raw provisional one.
+**Deliverables**: `ProgressSubmission`, `ProgressCorrection` tables + SPV submission UI; PM (Project Manager) approval flow; `ProgressValidation` table + QS weekly/biweekly validation UI; value-weighted (by approved budget) project-level rollup.
+**Exit criteria**: SPV submits progress with evidence; only PM-approved submissions move the provisional `progressPercent`; QS validation produces the official validated figure; Day 10's dashboard now reads the validated figure, not the raw provisional one.
 
 ## Day 12 — Stock, Surat Jalan, Delivery, Reconciliation, Stock-Adjusted Deviation (Calculation 2)
 
@@ -79,7 +79,7 @@ Each day ends with the Daily Completion Report format from your instructions, an
 ## Day 14 — Full UAT + Reconciliation + Production Hardening
 
 **Deliverables**: end-to-end seeded walkthrough of [WORKFLOWS.md](WORKFLOWS.md); reconciliation check (Baseline vs. PR vs. PO vs. Purchase/Paid/Debt vs. Expensed totals tie out); review of all remaining `NEEDS_CONFIRMATION` items and their real impact; performance pass (no N+1, pagination in place); final production smoke test.
-**Exit criteria**: full scenario from planning through kickoff, procurement (PR→PO→Payment independent of Invoice/Delivery), delivery, progress (SPV→PPIC→QS validation), stock reconciliation, and CEO dashboard deviation — no data-consistency gaps — on the live production URL.
+**Exit criteria**: full scenario from planning through kickoff, procurement (PR→PO→Payment independent of Invoice/Delivery), delivery, progress (SPV→PM→QS validation), stock reconciliation, and CEO dashboard deviation — no data-consistency gaps — on the live production URL.
 
 ## Sequencing Flexibility
 

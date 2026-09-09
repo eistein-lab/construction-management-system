@@ -14,7 +14,7 @@ const prisma = new PrismaClient({ adapter });
 const ROLES: Role[] = [
   "CEO",
   "FINANCE",
-  "PPIC",
+  "PM",
   "PURCHASING",
   "ACCOUNTING",
   "LOGISTIC",

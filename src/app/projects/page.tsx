@@ -23,7 +23,7 @@ const PROJECT_STATUS_VARIANT: Record<string, "secondary" | "default" | "outline"
 export default async function ProjectsPage() {
   const session = await auth();
   const projects = await listProjectsForCurrentUser();
-  const canCreate = session?.user.role === "PPIC";
+  const canCreate = session?.user.role === "PM";
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">

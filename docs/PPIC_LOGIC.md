@@ -2,6 +2,8 @@
 
 Status: PROPOSED. Entities defined in [DATA_MODEL.md](DATA_MODEL.md).
 
+> **"PPIC" is not a role** (corrected 2026-09-09, see [DECISIONS.md](DECISIONS.md) D-012). PPIC — Production Planning and Inventory Control — is the name of this process/document itself (historically an Excel baseline/budgeting sheet), kept as this doc's title because it names the *process*, not a person. The people who actually do this work are **PM (Project Manager)**, who owns and submits the baseline, and **QS (Quantity Surveyor)**, who prices it via formulas (see [QS_FORMULA_LOGIC.md](QS_FORMULA_LOGIC.md)) — together or separately.
+
 ## Hierarchy
 
 ```
@@ -9,9 +11,9 @@ Project → SubPhase → Work → PlanningLine (attached via PlanningBaseline)
 ```
 
 - **Project**: the contract/job.
-- **SubPhase**: a major grouping (Structure, Finishing, MEP, etc.) — ordering only, no independent calculations.
-- **Work**: the unit that everything else attaches to — planning quantities, QS formula application, PR/PO sourcing, and SPV progress all reference a `Work`. This is the level at which "planned vs. actual" is meaningful.
-- **PlanningLine**: one priced line item under a Work, belonging to exactly one `PlanningBaseline` (or `BaselineAddendum`).
+- **SubPhase**: a major grouping (Sub-structure, Structure, Lv2 Structure, Finishing, MEP, etc.). Not just an ordering label — it's the level **Sub-Phase Kickoff** gates (below), so purchasing, progress, and over-budget detection all roll up to it.
+- **Work**: the unit that everything else attaches to — planning quantities, QS formula application, PR/PO sourcing, and SPV progress all reference a `Work` (e.g. Column, Beam, Excavation). This is the level at which "planned vs. actual" is meaningful.
+- **PlanningLine**: one priced line item under a Work (Labor, Material, etc.), belonging to exactly one `PlanningBaseline` (or `BaselineAddendum`). Generated via a QS Formula, or entered manually — **manual lines are visibly flagged as not sourced from the formula library** (a "Manual" badge in the UI) so a reviewer can tell at a glance which lines to double-check; this is a display distinction only; both are equally valid, no distinct approval flow exists for either as of Day 3.
 
 ## Baseline Lifecycle
 
@@ -19,9 +21,9 @@ Project → SubPhase → Work → PlanningLine (attached via PlanningBaseline)
 DRAFT → SUBMITTED → APPROVED → (SUPERSEDED if a new baseline replaces it pre-kickoff)
 ```
 
-- PPIC builds `PlanningLine`s under a `DRAFT` `PlanningBaseline` — either manually or via QS `FormulaApplication` (see [QS_FORMULA_LOGIC.md](QS_FORMULA_LOGIC.md)).
-- PPIC `SUBMIT`s the baseline for review.
-- CEO (or configured approver — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q-03 on whether QS/PPIC also co-sign) `APPROVE`s it, which is a precondition for `Kickoff`.
+- PM builds `PlanningLine`s under a `DRAFT` `PlanningBaseline` — either manually, or QS contributes lines via `FormulaApplication` (see [QS_FORMULA_LOGIC.md](QS_FORMULA_LOGIC.md)) — both write into the same DRAFT baseline.
+- PM `SUBMIT`s the baseline for review.
+- CEO (or configured approver — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q-03 on whether QS/PM also co-sign) `APPROVE`s it, which is a precondition for project-level `Kickoff`.
 - A baseline can be revised (new `DRAFT`, old one `SUPERSEDED`) **only before Kickoff**. Once Kickoff exists, `version 1` (marked `isOriginal = true`) is permanently locked — no edits, no deletes, ever.
 
 ## Baseline History & the "Original Baseline" Guarantee
@@ -45,8 +47,27 @@ After Kickoff, the original baseline is frozen. Any scope change (new item, quan
 | Locked | Still changeable |
 |---|---|
 | Original baseline `PlanningLine` quantities/prices | Via `BaselineAddendum` only |
-| `PlanningBaseline.version 1` record itself | New addenda, new PRs against it |
+| `PlanningBaseline.version 1` record itself | New addenda, new PRs against it (once that Work's Sub-Phase is separately kicked off — below) |
 | — | Work names/sequence (non-financial metadata) may still be edited for clarity — NEEDS_CONFIRMATION whether this should also be locked (see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q-04) |
+
+## Sub-Phase Kickoff (added 2026-09-09 — see [DECISIONS.md](DECISIONS.md) D-013)
+
+Project-level `Kickoff` (above) is a one-time event that locks the baseline — but it does **not** by itself authorize spending. Real construction mobilizes phase by phase: Foundation starts before Column & Beam, which starts before Finishing. A second, repeatable layer gates that:
+
+```
+Project Kickoff (CEO, once)
+        ↓ unlocks the ability to request Sub-Phase kickoff at all
+PM requests SubPhaseKickoff for a specific SubPhase (with planned start/end dates)
+        ↓
+CEO APPROVE / REJECT (reject requires a reason; PM may resubmit — new row, old one preserved)
+        ↓
+APPROVED → PurchaseRequest can now be created against Works in that SubPhase
+```
+
+- Each `SubPhase` tracks its own kickoff independently — Foundation can be `APPROVED` while Column & Beam is still `REQUESTED` or not yet requested at all.
+- **No `SubPhaseKickoff` row, or a `REJECTED` one, means no Purchase Request can be created against that Sub-Phase's Works** — see [PROCUREMENT_LOGIC.md](PROCUREMENT_LOGIC.md).
+- This does not change project-level Kickoff's own effect (locking `PlanningBaseline` v1) — the two are independent gates: one locks the *plan*, the other unlocks *spending*, phase by phase.
+- Slated for Day 4 alongside project-level Kickoff — not built as of Day 3.
 
 ## Manual Adjustments to QS-Generated Lines
 

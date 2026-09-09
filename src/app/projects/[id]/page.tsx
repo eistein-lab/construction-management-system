@@ -23,7 +23,7 @@ export default async function ProjectDetailPage({
   const project = await getProjectDetail(id);
   if (!project) notFound();
 
-  const canEditStructure = session?.user.role === "PPIC";
+  const canEditStructure = session?.user.role === "PM";
   const canManageAssignments =
     session?.user.role === "CEO" || session?.user.role === "ADMIN";
   const assignableUsers = canManageAssignments ? await listAllUsers() : [];

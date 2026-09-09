@@ -16,15 +16,15 @@ Status: PROPOSED. Entities in [DATA_MODEL.md](DATA_MODEL.md). Revised to add the
 
 `Work.progressPercent` (CALCULATED, pre-validation) = `latest APPROVED ProgressSubmission.completedQtyCumulative / Baseline Allowance quantity for that Work × 100` (Baseline Allowance per [BUSINESS_RULES.md](BUSINESS_RULES.md), i.e. including approved addenda).
 
-## Approval: Project Manager (PPIC)
+## Approval: Project Manager (PM)
 
-Confirmed: **"Progress → Project Manager."** A `SUBMITTED` `ProgressSubmission` does not move `Work.progressPercent` until **PPIC** (the Project Manager role) sets it `APPROVED`. `REJECTED` submissions are kept (never deleted) with the rejection reason, visible to the SPV, and do not count.
+Confirmed: **"Progress → Project Manager."** A `SUBMITTED` `ProgressSubmission` does not move `Work.progressPercent` until **PM** (the Project Manager role) sets it `APPROVED`. `REJECTED` submissions are kept (never deleted) with the rejection reason, visible to the SPV, and do not count.
 
 ## Validation: QS, Weekly/Biweekly
 
-Confirmed: **"Progress Validation → QS weekly/biweekly."** On that cadence, **QS** reviews the PPIC-approved progress for each Work and produces a `ProgressValidation` record: `reportedProgressPercent` (snapshot of `Work.progressPercent` as of the period) and `validatedProgressPercent` (QS's confirmed/official figure — defaults to reported, may be adjusted after review).
+Confirmed: **"Progress Validation → QS weekly/biweekly."** On that cadence, **QS** reviews the PM-approved progress for each Work and produces a `ProgressValidation` record: `reportedProgressPercent` (snapshot of `Work.progressPercent` as of the period) and `validatedProgressPercent` (QS's confirmed/official figure — defaults to reported, may be adjusted after review).
 
-**CEO-level calculations (including the Progress % term in both deviation formulas) always read the latest `validatedProgressPercent`**, not the raw PPIC-approved running total directly — mirroring the same reported-vs-validated pattern used for stock (see [STOCK_RECONCILIATION.md](STOCK_RECONCILIATION.md)). Before the first validation of a period, the PPIC-approved figure is used provisionally, clearly labeled "unvalidated" on the dashboard.
+**CEO-level calculations (including the Progress % term in both deviation formulas) always read the latest `validatedProgressPercent`**, not the raw PM-approved running total directly — mirroring the same reported-vs-validated pattern used for stock (see [STOCK_RECONCILIATION.md](STOCK_RECONCILIATION.md)). Before the first validation of a period, the PM-approved figure is used provisionally, clearly labeled "unvalidated" on the dashboard.
 
 ## Project-Level Progress Rollup
 
@@ -32,8 +32,8 @@ Confirmed: **"Overall Project Progress is weighted by QS / approved budget value
 
 ## Historical Corrections
 
-A completed submission is never edited in place. A correction is a new `ProgressCorrection` row (`originalSubmissionId`, `previousQty`, `correctedQty`, `reason`) that itself requires PPIC approval before it affects `Work.progressPercent` (and flows into the next QS validation cycle). The original submission stays visible in history exactly as originally submitted.
+A completed submission is never edited in place. A correction is a new `ProgressCorrection` row (`originalSubmissionId`, `previousQty`, `correctedQty`, `reason`) that itself requires PM approval before it affects `Work.progressPercent` (and flows into the next QS validation cycle). The original submission stays visible in history exactly as originally submitted.
 
 ## Evidence
 
-`evidenceFiles[]` — photo (and optionally short note) attached per submission. Required for `APPROVED` status; PPIC can reject a submission for insufficient evidence using the standard rejection-reason flow. Storage mechanism is an architecture decision — see [ARCHITECTURE.md](ARCHITECTURE.md) §File Storage.
+`evidenceFiles[]` — photo (and optionally short note) attached per submission. Required for `APPROVED` status; PM can reject a submission for insufficient evidence using the standard rejection-reason flow. Storage mechanism is an architecture decision — see [ARCHITECTURE.md](ARCHITECTURE.md) §File Storage.

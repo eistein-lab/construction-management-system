@@ -6,13 +6,14 @@ import { assertProjectVisible } from "@/lib/services/access";
 /**
  * Service layer for Project / SubPhase / Work — docs/DATA_MODEL.md §2,
  * docs/PPIC_LOGIC.md, docs/USER_ROLES.md permission matrix:
- *   Project / SubPhase / Work | CEO:V FINANCE:V PPIC:V,C,E PURCHASING:V ACCOUNTING:V
+ *   Project / SubPhase / Work | CEO:V FINANCE:V PM:V,C,E PURCHASING:V ACCOUNTING:V
  *                               LOGISTIC:V SPV:V(assigned) QS:V ADMIN:V
- * Only PPIC can create/edit. Nothing is ever hard-deleted (docs/BUSINESS_RULES.md
- * §Historical Integrity) — there is deliberately no delete function here.
+ * Only PM (Project Manager) can create/edit. Nothing is ever hard-deleted
+ * (docs/BUSINESS_RULES.md §Historical Integrity) — there is deliberately no
+ * delete function here.
  */
 
-const STRUCTURE_EDITOR_ROLES = ["PPIC"] as const;
+const STRUCTURE_EDITOR_ROLES = ["PM"] as const;
 
 export async function listProjectsForCurrentUser() {
   const session = await requireSession();

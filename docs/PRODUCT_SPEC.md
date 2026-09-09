@@ -4,11 +4,11 @@ Status: PROPOSED. This is the top-level "what and why" — detailed logic lives 
 
 ## What This Application Is
 
-An internal construction-management system for Bali Blueprint (assumption from account domain — confirm company name for branding, see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q-21) covering the full project lifecycle from planning through procurement, progress, stock, and executive financial oversight. It replaces (assumption) spreadsheet-based tracking with one system of record shared across Planning (PPIC/QS), Purchasing, Finance, Accounting, Logistics, Site Supervision, and the CEO.
+An internal construction-management system for **Bali Blueprint** (confirmed 2026-09-09 — see [DECISIONS.md](DECISIONS.md) D-014) covering the full project lifecycle from planning through procurement, progress, stock, and executive financial oversight. It replaces (assumption) spreadsheet-based tracking with one system of record shared across Planning (PM/QS), Purchasing, Finance, Accounting, Logistics, Site Supervision, and the CEO.
 
 ## Who Uses It
 
-Eight functional roles plus one system-administration role. Full detail in [USER_ROLES.md](USER_ROLES.md): CEO, FINANCE, PPIC, PURCHASING, ACCOUNTING, LOGISTIC, SPV, QS, ADMIN.
+Eight functional roles plus one system-administration role. Full detail in [USER_ROLES.md](USER_ROLES.md): CEO, FINANCE, PM, PURCHASING, ACCOUNTING, LOGISTIC, SPV, QS, ADMIN.
 
 ## Core Value Proposition
 
@@ -39,8 +39,8 @@ Priority 1 is protected in the day-by-day plan — see [IMPLEMENTATION_PLAN.md](
 See [WORKFLOWS.md](WORKFLOWS.md) for the full diagram; summarized:
 
 ```
-Project → SubPhase → Work → PPIC Baseline (priced via QS Formula) → Baseline Approval → Kickoff
-   → Purchase Request → Variance Check → Purchase Order → Invoice → Payment (independent of delivery)
+Project → SubPhase → Work → PPIC Baseline (priced via QS Formula) → Baseline Approval → Project Kickoff
+   → Sub-Phase Kickoff (per Sub-Phase) → Purchase Request → Variance Check → Purchase Order → Invoice → Payment (independent of delivery)
    → [separately] PO → Surat Jalan → Delivery → Stock
    → [separately] Work → SPV Progress → Progress Approval → Project Progress
    → All of the above → CEO Dashboard → Expense vs Progress (+Stock) Deviation → Warnings → Purchasing Control

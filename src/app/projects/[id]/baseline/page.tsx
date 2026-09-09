@@ -17,7 +17,7 @@ export default async function BaselineIndexPage({
     redirect(`/projects/${projectId}/baseline/${baselines[0].id}`);
   }
 
-  const canCreate = session?.user.role === "PPIC";
+  const canCreate = session?.user.role === "PM";
 
   return (
     <div className="flex flex-col items-start gap-4">
@@ -30,7 +30,7 @@ export default async function BaselineIndexPage({
         </form>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Only PPIC can create a baseline.
+          Only PM can create a baseline.
         </p>
       )}
     </div>

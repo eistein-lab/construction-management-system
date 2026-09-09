@@ -32,10 +32,13 @@ import {
   DiscardFormulaApplicationButton,
 } from "./forms";
 
-const STATUS_VARIANT: Record<string, "secondary" | "default" | "outline" | "destructive"> = {
+const STATUS_VARIANT: Record<
+  string,
+  "secondary" | "success" | "warning" | "outline"
+> = {
   DRAFT: "secondary",
-  SUBMITTED: "default",
-  APPROVED: "default",
+  SUBMITTED: "warning",
+  APPROVED: "success",
   SUPERSEDED: "outline",
 };
 
@@ -61,14 +64,14 @@ export default async function BaselineDetailPage({
     sp.works.map((w) => ({ id: w.id, name: w.name, subPhaseName: sp.name }))
   );
 
-  const isPPIC = role === "PPIC";
+  const isPM = role === "PM";
   const isCEO = role === "CEO";
   const isQS = role === "QS";
-  const canEditLines = isPPIC && baseline.status === "DRAFT";
-  const canSubmit = isPPIC && baseline.status === "DRAFT" && baseline.lines.length > 0;
+  const canEditLines = isPM && baseline.status === "DRAFT";
+  const canSubmit = isPM && baseline.status === "DRAFT" && baseline.lines.length > 0;
   const canDecide = isCEO && baseline.status === "SUBMITTED";
   const canStartRevision =
-    isPPIC && baseline.status === "APPROVED" && isLatest && !hasActiveRevision;
+    isPM && baseline.status === "APPROVED" && isLatest && !hasActiveRevision;
   const canApplyFormula = isQS && baseline.status === "DRAFT";
 
   const formulas = canApplyFormula ? await listFormulas() : [];
@@ -132,9 +135,13 @@ export default async function BaselineDetailPage({
                 </TableCell>
                 <TableCell>
                   {line.itemDescription}
-                  {line.source === "QS_FORMULA" && (
+                  {line.source === "QS_FORMULA" ? (
                     <Badge variant="outline" className="ml-2 text-xs">
                       via Formula
+                    </Badge>
+                  ) : (
+                    <Badge variant="warning" className="ml-2 text-xs">
+                      Manual — not from formula library
                     </Badge>
                   )}
                 </TableCell>
@@ -263,7 +270,7 @@ export default async function BaselineDetailPage({
 
       <div className="flex flex-wrap items-center gap-3">
         {canSubmit && <SubmitBaselineButton projectId={projectId} baselineId={baselineId} />}
-        {isPPIC && baseline.status === "DRAFT" && baseline.lines.length === 0 && (
+        {isPM && baseline.status === "DRAFT" && baseline.lines.length === 0 && (
           <p className="text-sm text-muted-foreground">Add at least one line to submit.</p>
         )}
         {baseline.status === "SUBMITTED" && !canDecide && (

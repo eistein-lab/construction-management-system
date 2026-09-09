@@ -1,6 +1,6 @@
 # UI/UX Guidelines
 
-Status: PROPOSED, revised per your confirmed direction. No visual reference files exist in this repository — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
+Status: PROPOSED, revised per your confirmed direction. **Visual reference confirmed 2026-09-09** — see §Confirmed Visual Reference below; see [DECISIONS.md](DECISIONS.md) D-015.
 
 ## Direction
 
@@ -46,6 +46,8 @@ A small, restrained palette, used only to highlight meaning:
 
 This palette is the single source of truth for status color app-wide — CEO deviation warnings ([REPORTING_LOGIC.md](REPORTING_LOGIC.md)), PR/PO ceiling flags, and stock/progress validation badges all reuse these same tokens, never inventing per-page color choices.
 
+**Implemented (Day 3)**: `--success`/`--warning` CSS tokens in `src/app/globals.css` (light + dark variants) and matching `Badge` `variant="success"`/`variant="warning"` — used for APPROVED/Active (success) and SUBMITTED/flagged-for-review (warning) states. `destructive` (red, already existed) and default/secondary/outline (neutral) cover the rest — no separate "blue/informational" token exists yet; use `outline` until a real informational-badge need arises, don't invent a new color token for it speculatively.
+
 ## Typography — Used Intentionally to Define Importance
 
 - **Bold**: key numbers (KPI values, totals — e.g. Debt Value, Deviation %), page/section headings.
@@ -69,6 +71,12 @@ Simple charts only (bar, line, simple donut for %) — no 3D, no unnecessary cha
 
 shadcn/ui on Tailwind CSS — gives the flat, restrained-shadow, clean-table baseline for free; customize the color tokens above and reduce shadcn's default spacing/elevation to match the density and restraint direction rather than adding to it.
 
-## Open Item
+## Confirmed Visual Reference
 
-No mood-board/reference screenshots were supplied in this repository. If you have specific reference apps/screens in mind, share them before Day 1 UI work begins.
+You shared a working interactive mockup (Bali Blueprint) and confirmed you like its font, minimalism, and color use. Concretely adopted from it:
+
+- **Palette**: exact hex values for success/warning (green `#15803d`/warning amber `#d97706` light, `#6fcf97`/`#f0c883` dark) now back the `Badge` `success`/`warning` variants — see [DECISIONS.md](DECISIONS.md) D-015.
+- **Font**: Geist/Geist Mono — already what Next.js's own default template gave us in Day 1, so no change was needed.
+- **Density and flatness**: the mockup's tight tables, plain borders (no heavy shadows), and pill-style status badges all confirm the restraint direction above rather than contradicting it.
+
+Its exact component patterns (e.g. inline-editable table cells, dashed-border "addendum" blocks) are a style reference to draw from as relevant features get built (Addendum lands Day 4, PR/PO editing lands Days 5–6) — not a pixel-for-pixel spec to replicate. We build with our existing shadcn/Tailwind components, which already produce a comparable look.

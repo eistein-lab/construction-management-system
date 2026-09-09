@@ -27,7 +27,7 @@ export async function createSubPhaseAction(
       sequence: Number(formData.get("sequence") ?? 0),
     });
   } catch (error) {
-    return friendlyError(error, "Only PPIC can add a sub-phase.");
+    return friendlyError(error, "Only PM can add a sub-phase.");
   }
   revalidatePath(`/projects/${projectId}`);
   return undefined;
@@ -46,7 +46,7 @@ export async function createWorkAction(
       sequence: Number(formData.get("sequence") ?? 0),
     });
   } catch (error) {
-    return friendlyError(error, "Only PPIC can add a Work.");
+    return friendlyError(error, "Only PM can add a Work.");
   }
   revalidatePath(`/projects/${projectId}`);
   return undefined;

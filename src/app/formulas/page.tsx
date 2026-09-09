@@ -60,7 +60,7 @@ export default async function FormulasPage() {
                 <TableCell>{formula.outputUnit}</TableCell>
                 <TableCell>{formula._count.lines}</TableCell>
                 <TableCell>
-                  <Badge variant={formula.isActive ? "default" : "outline"}>
+                  <Badge variant={formula.isActive ? "success" : "outline"}>
                     {formula.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>

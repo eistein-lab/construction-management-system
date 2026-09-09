@@ -7,23 +7,34 @@ Status: PROPOSED. This is the cross-module process view; each step's detailed ru
 ```
 QS builds Pricing Library + Formulas
         ↓
-PPIC creates Project → SubPhase → Work
+PM creates Project → SubPhase → Work
         ↓
 QS applies Formula to Work (FormulaApplication) → generates PlanningLine(s)
-   (PPIC can also add PlanningLine(s) manually)
+   (PM can also add PlanningLine(s) manually — flagged as "not from formula library")
         ↓
-PPIC assembles PlanningBaseline (DRAFT) → SUBMIT
+PM assembles PlanningBaseline (DRAFT) → SUBMIT
         ↓
 CEO reviews → APPROVE (or REJECT → back to DRAFT)
         ↓
-CEO/PPIC triggers Kickoff → Project.status = KICKED_OFF, baseline v1 locked forever
+CEO triggers project-level Kickoff → Project.status = KICKED_OFF, baseline v1 locked forever
+   (this alone does not unlock spending — see 1b)
 ```
 Detail: [PPIC_LOGIC.md](PPIC_LOGIC.md), [QS_FORMULA_LOGIC.md](QS_FORMULA_LOGIC.md).
+
+## 1b. Sub-Phase Kickoff (per Sub-Phase, repeats as the project progresses)
+
+```
+(requires project-level Kickoff above to already exist)
+PM requests SubPhaseKickoff for one SubPhase (planned start/end dates)
+        ↓
+CEO APPROVE (unlocks PurchaseRequest for that Sub-Phase's Works) / REJECT (reason required, PM may resubmit)
+```
+Detail: [PPIC_LOGIC.md](PPIC_LOGIC.md) §Sub-Phase Kickoff. Not built until Day 4.
 
 ## 2. Post-Kickoff Scope Change
 
 ```
-PPIC drafts BaselineAddendum (ADD / INCREASE / DECREASE / REMOVE lines) → SUBMIT
+PM drafts BaselineAddendum (ADD / INCREASE / DECREASE / REMOVE lines) → SUBMIT
         ↓
 CEO AND FINANCE both APPROVE (dual — either rejecting → REJECTED)
         ↓
@@ -34,7 +45,8 @@ If approved: "current approved scope" = original baseline + all approved addenda
 ## 3. Procurement (Financial Thread)
 
 ```
-PPIC/PURCHASING creates PurchaseRequest (project-specific, many PRItems, PRItems reference Work/PlanningLine)
+(requires the PRItem's Work's SubPhase to have an APPROVED SubPhaseKickoff — see 1b)
+PM/PURCHASING creates PurchaseRequest (project-specific, many PRItems, PRItems reference Work/PlanningLine)
         ↓ SUBMIT → variance snapshot frozen
 FINANCE APPROVE (or REJECT) — CEO co-approves only if over the purchasing ceiling %
         ↓
@@ -70,7 +82,7 @@ Detail: [PROCUREMENT_LOGIC.md](PROCUREMENT_LOGIC.md) §Surat Jalan Validation, [
 SPV submits ProgressSubmission for a Work (cumulative completed qty + evidence) — physical completion only,
    never derived from material consumption
         ↓
-PPIC (Project Manager) APPROVE (only approved counts) / REJECT (with reason, SPV re-submits)
+PM (Project Manager) APPROVE (only approved counts) / REJECT (with reason, SPV re-submits)
         ↓
 Work.progressPercent recalculated (provisional/"unvalidated") → rolls up to Project.progressPercent
         ↓

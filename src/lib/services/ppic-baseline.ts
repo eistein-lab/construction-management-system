@@ -13,7 +13,7 @@ import { calculateLineTotal } from "@/lib/calculations/baseline";
  * dual CEO+FINANCE and arrives in a later day).
  */
 
-const BASELINE_EDITOR_ROLES = ["PPIC"] as const;
+const BASELINE_EDITOR_ROLES = ["PM"] as const;
 const BASELINE_APPROVER_ROLES = ["CEO"] as const;
 
 async function assertBaselineVisible(baselineId: string) {

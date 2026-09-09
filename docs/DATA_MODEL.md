@@ -13,8 +13,8 @@ Conventions:
 `id, name, email (unique), passwordHash, role (Role enum), isActive, phone`
 
 ### Role (enum)
-`CEO, FINANCE, PPIC, PURCHASING, ACCOUNTING, LOGISTIC, SPV, QS, ADMIN`
-See [USER_ROLES.md](USER_ROLES.md). `ADMIN` is an added technical role (NEEDS_CONFIRMATION — see OPEN_QUESTIONS Q-01) for user/config management; it is not one of the 8 business roles you listed.
+`CEO, FINANCE, PM, PURCHASING, ACCOUNTING, LOGISTIC, SPV, QS, ADMIN`
+See [USER_ROLES.md](USER_ROLES.md). `ADMIN` is an added technical role (NEEDS_CONFIRMATION — see OPEN_QUESTIONS Q-01) for user/config management; it is not one of the 8 business roles you listed. **`PM` (Project Manager) corrected 2026-09-09** — "PPIC" is not a role, it's the name of the baseline/budgeting process itself; the role was renamed from the earlier `PPIC` value. See [DECISIONS.md](DECISIONS.md) D-012.
 
 ### ProjectAssignment
 `id, projectId, userId, role (Role enum at time of assignment)` — scopes which projects a non-CEO/non-ADMIN user can see. CEO and ADMIN implicitly see all projects.
@@ -41,8 +41,12 @@ CALCULATED total value/qty are rollups of its PlanningLines. Only one baseline p
 `id, projectId, baselineId (the baseline it amends), reason, status (DRAFT | SUBMITTED | APPROVED | REJECTED), financeApprovedById, financeApprovedAt, ceoApprovedById, ceoApprovedAt`
 Represents a post-kickoff change. Contains one or more `AddendumLine` rows (same shape as PlanningLine, plus `changeType: ADD | INCREASE | DECREASE | REMOVE` and `planningLineId` when modifying an existing line). Addenda are never merged invisibly into the original baseline — they remain a separately queryable, separately auditable layer. "Current approved scope" for a Work = original baseline lines + all APPROVED addendum lines affecting it. **Approval is dual: both CEO and FINANCE must sign off** (`financeApprovedAt` and `ceoApprovedAt` both set) before status becomes `APPROVED`; either one rejecting sets status to `REJECTED`. See [PPIC_LOGIC.md](PPIC_LOGIC.md) and [USER_ROLES.md](USER_ROLES.md) §Approval Structure.
 
-### Kickoff
-`id, projectId, baselineId, approvedById, approvedAt` — one row per project, created when the **CEO** approves the baseline for execution. Its existence is what flips `Project.status` to `KICKED_OFF` and locks `PlanningBaseline` (version 1) from further edits.
+### Kickoff (project-level)
+`id, projectId, baselineId, approvedById, approvedAt` — one row per project, created when the **CEO** approves the baseline for execution. Its existence is what flips `Project.status` to `KICKED_OFF` and locks `PlanningBaseline` (version 1) from further edits. This is the one-time, whole-project event — it does **not** by itself unlock spending; it only unlocks the ability to request kickoff on individual Sub-Phases, below.
+
+### SubPhaseKickoff (NEW, added 2026-09-09 — see [DECISIONS.md](DECISIONS.md) D-013)
+`id, subPhaseId, requestedById, requestedAt, plannedStartDate, plannedEndDate, status (REQUESTED | APPROVED | REJECTED), approvedById, approvedAt, rejectionReason`
+Real construction projects mobilize phase by phase — Foundation kicks off before Column & Beam, which kicks off before Finishing, etc. — not all at once. Only requestable once the project-level `Kickoff` above exists. **PM** requests it per `SubPhase` (with planned start/end dates); **CEO** approves or rejects (rejection requires a reason, per [BUSINESS_RULES.md](BUSINESS_RULES.md) §Approval & Rejection). **Only an APPROVED `SubPhaseKickoff` unlocks `PurchaseRequest` creation against Works within that SubPhase** — see [PROCUREMENT_LOGIC.md](PROCUREMENT_LOGIC.md). A rejected request can be resubmitted — this creates a new row; the rejected one is never overwritten, consistent with [BUSINESS_RULES.md](BUSINESS_RULES.md) §Historical Integrity. `SubPhase.currentKickoffStatus` (CALCULATED, mirrors the latest row's status, defaults to "NOT_REQUESTED" when no row exists yet) is a read convenience, not a second source of truth. Slated for Day 4 alongside project-level Kickoff — not built yet.
 
 ## 3. QS Formula (Pricing Library)
 
@@ -127,7 +131,7 @@ Owner: **QS**, weekly/biweekly. **CEO-level calculations always read `validatedQ
 
 ### ProgressSubmission
 `id, workId, projectId, submittedById, submissionDate, completedQtyCumulative, evidenceFiles[], status (SUBMITTED | APPROVED | REJECTED), approvedById, approvedAt, rejectionReason`
-Submitted by **SPV** at the Work level (physical completion only — **never** derived from material consumption, see [PROGRESS_LOGIC.md](PROGRESS_LOGIC.md)). Approver: **PPIC (Project Manager)** — "Progress → Project Manager" per your confirmed approval structure. Only `APPROVED` submissions count toward `Work.progressPercent`.
+Submitted by **SPV** at the Work level (physical completion only — **never** derived from material consumption, see [PROGRESS_LOGIC.md](PROGRESS_LOGIC.md)). Approver: **PM (Project Manager)** — "Progress → Project Manager" per your confirmed approval structure. Only `APPROVED` submissions count toward `Work.progressPercent`.
 
 ### ProgressCorrection
 `id, originalSubmissionId, correctedById, reason, previousQty, correctedQty, approvedById, approvedAt`
@@ -135,7 +139,7 @@ Corrections never mutate history in place — they are a new linked row so the o
 
 ### ProgressValidation (NEW — QS's periodic validation)
 `id, workId, periodStart, periodEnd, reportedProgressPercent (CALCULATED snapshot of Work.progressPercent as of period end, from approved submissions), validatedProgressPercent (QS's confirmed/official figure — defaults to reported, may be adjusted), validatedById, validatedAt, notes`
-Owner: **QS**, weekly/biweekly — "Progress Validation → QS weekly/biweekly". **CEO dashboard's Progress % always reads the latest `validatedProgressPercent` per Work** (rolled up project-wide per [PROGRESS_LOGIC.md](PROGRESS_LOGIC.md) §Project-Level Rollup), not the raw PPIC-approved running total directly — mirroring the same reported-vs-validated pattern as stock.
+Owner: **QS**, weekly/biweekly — "Progress Validation → QS weekly/biweekly". **CEO dashboard's Progress % always reads the latest `validatedProgressPercent` per Work** (rolled up project-wide per [PROGRESS_LOGIC.md](PROGRESS_LOGIC.md) §Project-Level Rollup), not the raw PM-approved running total directly — mirroring the same reported-vs-validated pattern as stock.
 
 ## 7. Accounting
 
@@ -176,7 +180,8 @@ Written for every state-changing action on: PlanningBaseline, BaselineAddendum, 
 Project → SubPhase → Work
 Work → PlanningLine (via PlanningBaseline, optionally via FormulaApplication)
 Work → BaselineAddendum lines (post-kickoff, CEO+FINANCE dual-approved)
-Work → ProgressSubmission (SPV, PPIC-approved) → ProgressValidation (QS, weekly/biweekly) → Work.progressPercent (as CEO sees it)
+Work → ProgressSubmission (SPV, PM-approved) → ProgressValidation (QS, weekly/biweekly) → Work.progressPercent (as CEO sees it)
+Project → Kickoff (CEO, one-time) → SubPhase → SubPhaseKickoff (PM requests, CEO approves, per Sub-Phase) → unlocks PurchaseRequest for that Sub-Phase's Works
 PlanningLine ← PRItem (reference for variance) ← PurchaseRequest (project-specific, FINANCE-approved)
 PurchaseRequest → 1:N PurchaseOrder (each PO belongs to exactly one PR) → Supplier
 PurchaseOrder → purchaseValue/paidValue/debtValue (A/B/C ladder)

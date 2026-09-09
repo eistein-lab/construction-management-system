@@ -38,7 +38,7 @@ Recommended default: separate role. Blocks Priority 1? No.
 
 ~~Q-02 — non-SPV project scoping~~ — **RESOLVED**, see [DECISIONS.md](DECISIONS.md) D-010: only SPV is `ProjectAssignment`-scoped, per the permission matrix's own "V (assigned)" annotation which applies to no other role.
 
-**Q-03 — Does PlanningBaseline approval require QS/PPIC co-sign in addition to CEO, or is CEO sole approver?**
+**Q-03 — Does PlanningBaseline approval require QS/PM co-sign in addition to CEO, or is CEO sole approver?**
 Recommended default: CEO sole approver (matches your confirmed table: "PPIC Baseline → CEO", singular). Blocks Priority 1? No — treated as resolved-enough to build; flag if wrong.
 
 **Q-04 — Do Work names/sequence (non-financial metadata) also lock at Kickoff?**
@@ -77,8 +77,7 @@ Recommended default: credentials-based (NextAuth Credentials provider). Blocks P
 **Q-20 — PostgreSQL hosting provider.**
 Recommended default: Vercel Postgres or Neon (both simple to connect from Vercel). Blocks Priority 1? Yes — blocks Day 1 (nowhere for migrations to run without it).
 
-**Q-21 — Company name for branding.**
-Recommended default: proceed with "Bali Blueprint" (from your email domain) until corrected. Blocks Priority 1? No.
+~~Q-21 — Company name for branding~~ — **RESOLVED**, confirmed "Bali Blueprint" via your shared mockup. See [DECISIONS.md](DECISIONS.md) D-014.
 
 **Q-22 — Do field roles (SPV, LOGISTIC) need offline capability?**
 Recommended default: responsive web only, connectivity assumed. Blocks Priority 1? No, but materially changes architecture if wrong — flagging early.
@@ -86,3 +85,11 @@ Recommended default: responsive web only, connectivity assumed. Blocks Priority 
 **Q-E — `STOCK_VARIANCE_THRESHOLD_PCT` configuration ownership.**
 Question: your instructions explicitly named CEO+FINANCE as owners of the purchasing ceiling, but didn't say who owns the stock variance threshold.
 Recommended default: CEO/FINANCE/ADMIN/QS (see [DECISIONS.md](DECISIONS.md) A-06). Blocks Priority 1? No — Priority 2.
+
+**Q-F — Sub-Phase Kickoff approver: CEO alone, or CEO+Finance?**
+Question: your correction confirmed Kickoff happens per Sub-Phase (see [DECISIONS.md](DECISIONS.md) D-013), but didn't state who approves it. Kept as CEO alone, matching the existing project-level Kickoff pattern you already confirmed ("Kickoff → CEO", singular) — but the interactive mockup you shared uses `FINANCE_LIKE` (CEO or Finance) for this action.
+Recommended default: CEO alone (consistency with the already-confirmed project Kickoff row). Blocks Priority 1? No — Day 4 is Priority 1, but ships correctly either way; only the approver role differs, not the mechanism.
+
+**Q-G — Does the mockup's broader Finance-approval scope (Progress and Baseline approved by `FINANCE_LIKE` = CEO or Finance, not just PM/CEO alone) supersede your earlier, explicit approval-structure confirmation, or was that mockup an earlier draft?**
+Question: the mockup you shared (built "before," per your message) has `canApproveBaseline` and `canApproveProgress` both requiring `FINANCE_LIKE` (CEO or Finance Manager) — but your Day-0 corrections explicitly confirmed "PPIC Baseline → CEO" (sole) and "Progress → Project Manager" (sole approver), and Day 2 already shipped Baseline approval as CEO-only. Rather than silently override an already-confirmed, already-shipped rule based on an older mockup, both are kept as previously confirmed.
+Recommended default: keep current rules (Baseline: CEO alone; Progress: PM alone) — the mockup is treated as a visual/hierarchy reference, not a supersede of your explicit Day-0 approval corrections. Blocks Priority 1? No — flagging only so you can explicitly say if you actually want Finance added to either approval, since Day 2 (Baseline) is already live and Day 11 (Progress) is not yet built.

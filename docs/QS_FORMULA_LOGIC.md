@@ -44,7 +44,7 @@ Every `PlanningLine` with `source = QS_FORMULA` can always answer: which Formula
 
 ## Manual Override Behavior
 
-A QS or PPIC user can hand-adjust a generated `PlanningLine`'s quantity or price before the baseline is submitted (site conditions differ from the standard recipe). The line keeps its `formulaApplicationId` link — the UI shows it as "Formula: 1 m² brick wall (adjusted from formula-generated 120 → 115)" rather than silently presenting it as a fresh manual entry. Once the baseline is `APPROVED`, the same rule as any other `PlanningLine` applies: changes only via `BaselineAddendum` (see [PPIC_LOGIC.md](PPIC_LOGIC.md)).
+A QS or PM user can hand-adjust a generated `PlanningLine`'s quantity or price before the baseline is submitted (site conditions differ from the standard recipe). The line keeps its `formulaApplicationId` link — the UI shows it as "Formula: 1 m² brick wall (adjusted from formula-generated 120 → 115)" rather than silently presenting it as a fresh manual entry. Once the baseline is `APPROVED`, the same rule as any other `PlanningLine` applies: changes only via `BaselineAddendum` (see [PPIC_LOGIC.md](PPIC_LOGIC.md)).
 
 ## How QS Quantities Become PPIC Planning Quantities
 
